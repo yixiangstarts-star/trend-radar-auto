@@ -1,0 +1,109 @@
+# ============================================
+# 科技新闻采集系统 - 配置文件
+# ============================================
+# 使用方法：
+#   1. 填入 IMA 凭证（从 ima.qq.com/agent-interface 获取）
+#   2. MVP阶段先跑前5个源验证链路
+#   3. 验证通过后取消注释后面的源逐步扩展
+# ============================================
+
+# ---- RSS 采集源 ----
+rss_sources:
+  # === MVP 阶段：5个已验证RSS源 ===
+  - name: "36氪"
+    url: "https://36kr.com/feed"
+    category_hint: ["C04", "C05"]  # 互联网平台、创投融资
+    priority: 1
+    authority_score: 15
+
+  - name: "虎嗅"
+    url: "https://rss.huxiu.com/"
+    category_hint: ["C04", "C07"]  # 互联网平台、科技政策
+    priority: 1
+    authority_score: 15
+
+  - name: "量子位"
+    url: "https://www.qbitai.com/feed"
+    category_hint: ["C01", "C02"]  # AI与大模型、芯片半导体
+    priority: 1
+    authority_score: 15
+
+  - name: "IT之家"
+    url: "https://www.ithome.com/rss/"
+    category_hint: ["C06", "C02"]  # 硬件消费电子、芯片半导体
+    priority: 1
+    authority_score: 10
+
+  - name: "Solidot"
+    url: "https://www.solidot.org/index.rss"
+    category_hint: ["C01", "C08"]  # AI、开源工具
+    priority: 1
+    authority_score: 10
+
+  # === 扩展阶段：以下源验证通过后逐步启用 ===
+  # - name: "爱范儿"
+  #   url: "https://www.ifanr.com/feed"
+  #   category_hint: ["C06"]
+  #   priority: 1
+  #   authority_score: 10
+  #
+  # - name: "少数派"
+  #   url: "https://sspai.com/feed"
+  #   category_hint: ["C08", "C06"]
+  #   priority: 1
+  #   authority_score: 10
+  #
+  # - name: "PingWest品玩"
+  #   url: "https://www.pingwest.com/feed/all"
+  #   category_hint: ["C04", "C01"]
+  #   priority: 1
+  #   authority_score: 10
+  #
+  # - name: "动点科技"
+  #   url: "http://cn.technode.com/feed/"
+  #   category_hint: ["C05", "C04"]
+  #   priority: 2
+  #   authority_score: 5
+
+# ---- IMA 知识库配置 ----
+ima:
+  base_url: "https://ima.qq.com"
+  client_id: ""                   # 本地运行可填入，GitHub Actions 从 Secrets 读取
+  api_key: ""                     # 本地运行可填入，GitHub Actions 从 Secrets 读取
+  knowledge_base_id: ""             # 可选，知识库 ID
+  # 分类笔记ID（在IMA中创建好分类笔记后填入）
+  category_notes:
+    C01: ""  # AI与大模型
+    C02: ""  # 芯片与半导体
+    C03: ""  # 智能汽车与新能源
+    C04: ""  # 互联网平台与产品
+    C05: ""  # 创投与融资
+    C06: ""  # 硬件与消费电子
+    C07: ""  # 科技政策与监管
+    C08: ""  # 开源与技术工具
+
+# ---- 运行参数 ----
+pipeline:
+  # 每日采集过去多少小时的新闻
+  lookback_hours: 24
+  # 去重相似度阈值（0-1），越高越严格
+  dedup_threshold: 0.8
+  # 日报 Top N 条做深度摘要
+  top_n_summary: 10
+  # 输出目录
+  output_dir: "./output"
+  # 分类体系
+  categories:
+    C01: "AI与大模型"
+    C02: "芯片与半导体"
+    C03: "智能汽车与新能源"
+    C04: "互联网平台与产品"
+    C05: "创投与融资"
+    C06: "硬件与消费电子"
+    C07: "科技政策与监管"
+    C08: "开源与技术工具"
+
+# ---- 通知渠道（可选）----
+notification:
+  enabled: false
+  wechat_work_webhook: ""  # 企业微信机器人 Webhook 地址

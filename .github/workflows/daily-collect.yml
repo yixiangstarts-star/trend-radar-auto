@@ -1,0 +1,78 @@
+# 科技新闻每日采集 - GitHub Actions 定时任务
+# 每天北京时间 09:00 自动执行
+# 也支持手动触发（Actions → Daily Tech News → Run workflow）
+
+name: Daily Tech News Collection
+
+on:
+  schedule:
+    # 每天北京时间 09:00（UTC 01:00）
+    # 采集昨天全天 + 今晨早间新闻
+    - cron: '0 1 * * *'
+
+  # 手动触发
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: '试运行（不写入IMA）'
+        type: boolean
+        default: false
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15  # 最大运行15分钟
+
+    steps:
+      - name: 📥 检出代码
+        uses: actions/checkout@v4
+
+      - name: 🐍 设置 Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: 📦 安装依赖
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          # jieba 需要下载词典，首次运行可能稍慢
+          python -c "import jieba; jieba.initialize()"
+
+      - name: 🕐 显示当前时间
+        run: |
+          echo "UTC时间: $(date -u)"
+          echo "北京时间: $(TZ='Asia/Shanghai' date)"
+
+      - name: 🚀 运行采集流水线
+        env:
+          IMA_CLIENT_ID: ${{ secrets.IMA_CLIENT_ID }}
+          IMA_API_KEY: ${{ secrets.IMA_API_KEY }}
+          IMA_KB_ID: ${{ secrets.IMA_KB_ID }}
+          WECHAT_WEBHOOK: ${{ secrets.WECHAT_WEBHOOK }}
+          # 可选：AI摘要
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_API_BASE: ${{ secrets.OPENAI_API_BASE }}
+        run: |
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            python main.py --dry-run
+          else
+            python main.py
+          fi
+
+      - name: 📊 上传日报（Artifact）
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: daily-report-${{ github.run_id }}
+          path: output/*.md
+          retention-days: 30
+
+      - name: ✅ 完成通知
+        if: always()
+        run: |
+          if [ "${{ job.status }}" = "success" ]; then
+            echo "🎉 流水线执行成功！"
+          else
+            echo "❌ 流水线执行失败，请检查日志"
+          fi

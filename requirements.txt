@@ -1,0 +1,20 @@
+# 科技新闻采集系统 - Python依赖
+# MVP阶段：5个RSS源 + IMA入库
+
+# RSS 解析
+feedparser==6.0.11
+
+# HTTP 请求
+requests==2.32.3
+
+# YAML 配置
+PyYAML==6.0.2
+
+# 中文分词（去重用）
+jieba==0.42.1
+
+# 可选：AI摘要（OpenAI兼容接口）
+# openai==1.30.0
+
+# 可选：企业微信推送
+# requests 已包含
