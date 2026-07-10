@@ -68,8 +68,8 @@ rss_sources:
 # ---- IMA 知识库配置 ----
 ima:
   base_url: "https://ima.qq.com"
-  client_id: ""                   # 本地运行可填入，GitHub Actions 从 Secrets 读取
-  api_key: ""                     # 本地运行可填入，GitHub Actions 从 Secrets 读取
+  client_id: "f7af7914e74c58acaa2004719ffce0ba"                   # 本地运行可填入，GitHub Actions 从 Secrets 读取
+  api_key: "XFdW2zKiq9QMXJcO49Pnd8wU+b2A7uJriXYSDdKYOkYSkQCB7BJ3YV2Cz2T7mRObzTBfbLYsPw=="                     # 本地运行可填入，GitHub Actions 从 Secrets 读取
   knowledge_base_id: ""             # 可选，知识库 ID
   # 分类笔记ID（在IMA中创建好分类笔记后填入）
   category_notes:
