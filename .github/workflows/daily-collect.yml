@@ -1,17 +1,14 @@
 # Tech News Daily Collection - GitHub Actions scheduled task
-# Target: report in IMA by 01:07 Beijing Time (UTC 17:07) every day
-# GitHub public repo cron delay ~7.5h, so set cron at UTC 09:00 → fires ~UTC 16:30 (Beijing 00:30)
-# Two cron slots (09:00 + 10:00) with 3h dedup window
+# Plan B: WorkBuddy automation (08:40 Beijing) as primary, GitHub cron as backup
+# Target: report in IMA by 09:00 Beijing Time every day
 
 name: Daily Tech News Collection
 
 on:
   schedule:
-    # Target: IMA report by 01:07 Beijing (UTC 17:07)
-    # GitHub public repo schedule delay is typically ~7.5 hours
-    # Reverse-calculated: UTC 09:00 + 7.5h delay ≈ UTC 16:30 → Beijing 00:30 ✅
-    - cron: '0 9 * * *'   # UTC 09:00, est. fire UTC 16:00-17:00 (Beijing 00:00-01:00)
-    - cron: '0 10 * * *'  # UTC 10:00, est. fire UTC 17:00-18:00 (Beijing 01:00-02:00, backup)
+    # Backup: UTC 17:00 (Beijing 01:00 next day)
+    # With ~7.5h delay → fires ~UTC 00:30 (Beijing 08:30) ✅
+    - cron: '0 17 * * *'
 
   workflow_dispatch:
     inputs:
@@ -35,10 +32,10 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          # Manual trigger always runs
+          # workflow_dispatch always runs (manual trigger or WorkBuddy automation)
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             echo "skip=false" >> $GITHUB_OUTPUT
-            echo "Manual trigger, proceeding"
+            echo "Dispatch trigger, proceeding"
             exit 0
           fi
 
