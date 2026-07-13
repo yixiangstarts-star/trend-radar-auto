@@ -1,18 +1,17 @@
 # Tech News Daily Collection - GitHub Actions scheduled task
-# Target: report in IMA by 01:07 Beijing Time (17:07 UTC) every day
-# GitHub cron for public repos has ~7-8h delay, so multiple times are set
-# Dedup check ensures only one run per 6-hour window
+# Target: report in IMA by 01:07 Beijing Time (UTC 17:07) every day
+# GitHub public repo cron delay ~7.5h, so set cron at UTC 09:00 → fires ~UTC 16:30 (Beijing 00:30)
+# Two cron slots (09:00 + 10:00) with 3h dedup window
 
 name: Daily Tech News Collection
 
 on:
   schedule:
-    # Multiple cron times to maximize trigger probability
-    # GitHub public repo schedule delay is typically 7-8 hours
-    - cron: '0 6 * * *'   # UTC 06:00 = Beijing 14:00, est. fire 21:00-22:00 Beijing
-    - cron: '0 8 * * *'   # UTC 08:00 = Beijing 16:00, est. fire 23:00-00:00 Beijing
-    - cron: '0 10 * * *'  # UTC 10:00 = Beijing 18:00, est. fire 01:00-02:00 Beijing
-    - cron: '0 12 * * *'  # UTC 12:00 = Beijing 20:00, est. fire 03:00-04:00 Beijing (backup)
+    # Target: IMA report by 01:07 Beijing (UTC 17:07)
+    # GitHub public repo schedule delay is typically ~7.5 hours
+    # Reverse-calculated: UTC 09:00 + 7.5h delay ≈ UTC 16:30 → Beijing 00:30 ✅
+    - cron: '0 9 * * *'   # UTC 09:00, est. fire UTC 16:00-17:00 (Beijing 00:00-01:00)
+    - cron: '0 10 * * *'  # UTC 10:00, est. fire UTC 17:00-18:00 (Beijing 01:00-02:00, backup)
 
   workflow_dispatch:
     inputs:
@@ -43,14 +42,14 @@ jobs:
             exit 0
           fi
 
-          # For scheduled runs, check if there's a successful run within last 6 hours
-          SIX_HOURS_AGO=$(date -u -d '6 hours ago' '+%Y-%m-%dT%H:%M:%SZ')
-          echo "Checking for successful runs since $SIX_HOURS_AGO"
+          # For scheduled runs, check if there's a successful run within last 3 hours
+          THREE_HOURS_AGO=$(date -u -d '3 hours ago' '+%Y-%m-%dT%H:%M:%SZ')
+          echo "Checking for successful runs since $THREE_HOURS_AGO"
 
           RECENT=$(curl -s -H "Authorization: Bearer $GH_TOKEN" \
             -H "X-GitHub-Api-Version: 2022-11-28" \
             "https://api.github.com/repos/${{ github.repository }}/actions/runs?per_page=5&status=completed&conclusion=success" \
-            | jq -r ".workflow_runs[] | select(.created_at >= \"$SIX_HOURS_AGO\") | .created_at" | head -1)
+            | jq -r ".workflow_runs[] | select(.created_at >= \"$THREE_HOURS_AGO\") | .created_at" | head -1)
 
           if [ -n "$RECENT" ]; then
             echo "skip=true" >> $GITHUB_OUTPUT
